@@ -2,7 +2,7 @@
 
 An interactive wildfire simulator in Python, built on a stochastic cellular automaton. You start a fire by clicking a tree, then watch it spread with optional wind and a firebreak. A Monte Carlo forecast runs 50 possible futures and maps where the fire is most likely to reach.
 
-Built as an individual project for the Advanced Modelling and Simulation course at Hochschule Rhein-Waal (grade 2.0).
+Built as an individual project for an Advanced Modelling and Simulation course.
 
 ![The fire spreading south with the wind and stopping at a firebreak](images/demo.gif)
 
