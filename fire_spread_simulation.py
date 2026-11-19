@@ -14,18 +14,22 @@ fire_prob = 0.5
 wind_prob_boost = 0.4
 wind_skip_prob = 0.5
 timesteps = 100
+# Set SEED to a whole number (for example 42) to make every run repeatable.
+SEED = None
+if SEED is not None:
+    np.random.seed(SEED)
 firebreak_rows = range(30, 35)
 firebreak_on = False
 
 # Wind state
 wind_enabled = False
-wind_direction = (0, 1)
 wind_map = {
     'North': (1, 0),   # fire moves south
     'South': (-1, 0),  # fire moves north
     'West': (0, 1),    # fire moves east
     'East': (0, -1),   # fire moves west
 }
+wind_direction = wind_map['East']  # matches the direction selected in the UI at start
 
 # UI state
 anim_running = False
@@ -258,20 +262,29 @@ speed_slider = Slider(axspeed, 'Speed', 50, 1000, valinit=interval_ms, valstep=5
 
 # Forecasting Monte Carlo simulation
 def forecast_fire_spread(trials=50, steps=30):
-    forecast_grid = np.zeros_like(forest, dtype=float)
+    """Run the fire forward `trials` times from the current forest.
+
+    Returns, for each cell, the share of runs in which that cell caught fire
+    at some point (0 = never, 1 = in every run).
+    """
+    burned_count = np.zeros_like(forest, dtype=float)
     for _ in range(trials):
         sim_forest = forest.copy()
+        burned = sim_forest == FIRE
         for _ in range(steps):
             sim_forest = step(sim_forest)
-            forecast_grid += (sim_forest == FIRE).astype(float)
-    forecast_grid /= trials
-    return forecast_grid
+            burned |= sim_forest == FIRE
+            if not np.any(sim_forest == FIRE):
+                break
+        burned_count += burned
+    return burned_count / trials
 
 # Plot forecast heatmap
 def show_forecast(event):
     forecast = forecast_fire_spread()
     fig_forecast, axf = plt.subplots(figsize=(6, 6))
-    axf.imshow(forecast, cmap='hot', interpolation='nearest')
+    shown = axf.imshow(forecast, cmap='hot', interpolation='nearest', vmin=0, vmax=1)
+    fig_forecast.colorbar(shown, ax=axf, fraction=0.046, pad=0.04, label='Chance of burning')
     axf.set_title("Forecasted Fire Spread Probability")
     axf.set_xticks([])
     axf.set_yticks([])
