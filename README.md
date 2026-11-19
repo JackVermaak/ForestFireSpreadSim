@@ -17,7 +17,7 @@ python fire_spread_simulation.py
 
 1. Click a tree to place the first fire.
 2. Press **Start**. **Pause** and **Reset** do what they say.
-3. Tick **Wind** and pick a direction, or tick **Firebreak** to clear a strip across the forest.
+3. Tick **Wind** and pick where it blows from (a north wind pushes the fire south), or tick **Firebreak** to clear a strip across the forest.
 4. Press **Forecast Spread** to see the chance of each cell burning.
 
 ## How the model works

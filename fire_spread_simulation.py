@@ -19,7 +19,7 @@ TIMESTEPS = 100
 FIREBREAK_ROWS = fm.DEFAULT_FIREBREAK_ROWS
 # Set SEED to a whole number (for example 42) to make every run repeatable.
 SEED = None
-START_WIND = "East"  # matches the direction selected in the UI at start
+START_WIND = "West"  # wind from the west, so the fire runs east; matches the UI at start
 
 
 class FireApp:
@@ -90,7 +90,9 @@ class FireApp:
         self.check.on_clicked(lambda label: self.toggle_firebreak() if label == "Firebreak" else self.toggle_wind())
 
         names = list(fm.WIND)
-        self.radio = RadioButtons(plt.axes([0.4, 0.13, 0.2, 0.12]), names, active=names.index(START_WIND))
+        axradio = plt.axes([0.4, 0.13, 0.2, 0.12])
+        axradio.set_title("Wind from", fontsize=10)
+        self.radio = RadioButtons(axradio, names, active=names.index(START_WIND))
         self.radio.on_clicked(self.change_wind_direction)
 
         self.speed_slider = Slider(plt.axes([0.7, 0.15, 0.2, 0.03]), "Speed", 50, 1000,
@@ -111,6 +113,7 @@ class FireApp:
         self.fig.canvas.draw_idle()
 
     def update_arrow(self):
+        # The arrow points downwind, the way the fire is pushed (opposite the upwind offset).
         dy, dx = fm.WIND[self.wind_name]
         self.arrow.xy = (0.9 - 0.05 * dx, 0.9 + 0.05 * dy)
         self.arrow.set_position((0.9, 0.9))

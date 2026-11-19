@@ -73,8 +73,8 @@ def test_wind_embers_jump_a_one_cell_gap():
     forest[:, 2] = FIRE
     params = fm.FireParams(fire_prob=0.0, wind_prob_boost=0.0, wind_skip_prob=1.0)
     no_wind = fm.step(forest, fm.make_rng(0), wind=None, params=params)
-    toward_trees = fm.step(forest, fm.make_rng(0), wind=fm.WIND["East"], params=params)  # upwind = x - 1
-    away_from_trees = fm.step(forest, fm.make_rng(0), wind=fm.WIND["West"], params=params)  # upwind = x + 1
+    toward_trees = fm.step(forest, fm.make_rng(0), wind=fm.WIND["West"], params=params)  # from the west: blows east
+    away_from_trees = fm.step(forest, fm.make_rng(0), wind=fm.WIND["East"], params=params)  # from the east: blows west
     assert not np.any(no_wind[:, 4] == FIRE)
     assert np.all(toward_trees[:, 4] == FIRE)
     assert not np.any(away_from_trees[:, 4] == FIRE)
@@ -85,9 +85,26 @@ def test_wind_boost_raises_the_catch_rate():
     forest[:, 100] = FIRE
     rng = fm.make_rng(7)
     calm = fm.step(forest, rng)
-    windy = fm.step(forest, rng, wind=fm.WIND["East"])  # fire is upwind of column 101
+    windy = fm.step(forest, rng, wind=fm.WIND["West"])  # wind from the west: column 100 is upwind of 101
     assert abs(np.mean(calm[:, 101] == FIRE) - 0.5) < 0.1
     assert abs(np.mean(windy[:, 101] == FIRE) - 0.9) < 0.07
+
+
+@pytest.mark.parametrize("name, grows", [("North", "south"), ("South", "north"), ("West", "east"), ("East", "west")])
+def test_wind_pushes_fire_away_from_where_it_blows(name, grows):
+    # A line of fire through the middle of a full forest, one step with a strong wind boost.
+    forest = full_forest(41)
+    vertical = grows in ("east", "west")
+    if vertical:
+        forest[:, 20] = FIRE
+    else:
+        forest[20, :] = FIRE
+    params = fm.FireParams(fire_prob=0.2, wind_prob_boost=0.8, wind_skip_prob=0.0)
+    new = fm.step(forest, fm.make_rng(1), wind=fm.WIND[name], params=params)
+    side = {"south": new[21], "north": new[19], "east": new[:, 21], "west": new[:, 19]}
+    other = {"south": new[19], "north": new[21], "east": new[:, 19], "west": new[:, 21]}
+    assert np.mean(side[grows] == FIRE) == 1.0  # downwind always catches
+    assert np.mean(other[grows] == FIRE) < 0.5  # upwind only at the base 20 %
 
 
 @pytest.mark.parametrize("wind", [None, fm.WIND["North"], fm.WIND["East"]])

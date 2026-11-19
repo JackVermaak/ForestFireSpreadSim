@@ -22,14 +22,15 @@ import numpy as np
 
 EMPTY, TREE, FIRE = 0, 1, 2
 
-# Offset (dy, dx) from a tree to its upwind cell, i.e. the cell whose fire the wind
-# carries onto the tree. Row 0 is the top of the grid as drawn by imshow, so a positive
-# dy means "the row below". These match the original UI labels and the on-screen arrow.
+# Wind is named the usual way, by where it blows FROM: a north wind pushes the fire south.
+# Each value is the offset (dy, dx) from a tree to its upwind cell, the cell whose fire the
+# wind carries onto the tree. Row 0 is the top of the grid as drawn by imshow (north), so
+# dy = -1 means "the row above".
 WIND = {
-    "North": (1, 0),
-    "South": (-1, 0),
-    "West": (0, 1),
-    "East": (0, -1),
+    "North": (-1, 0),  # from the north: fire moves south
+    "South": (1, 0),   # from the south: fire moves north
+    "West": (0, -1),   # from the west: fire moves east
+    "East": (0, 1),    # from the east: fire moves west
 }
 
 
